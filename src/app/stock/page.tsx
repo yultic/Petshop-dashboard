@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StockAlertsTable } from "@/components/dashboard/stock-alerts-table";
@@ -9,9 +9,10 @@ import {
   useStockCoverage,
   usePurchaseOrder,
   useStockSummary,
+  useImportStock,
 } from "@/hooks/use-api";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Download, ShoppingCart, AlertTriangle, Package, CheckCircle } from "lucide-react";
+import { Download, ShoppingCart, AlertTriangle, Package, CheckCircle, Upload, FileSpreadsheet, Loader2, XCircle } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -25,10 +26,34 @@ import { formatNumber, formatCurrency } from "@/lib/utils";
 
 export default function StockPage() {
   const [days] = useState(30);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const { data: alerts, isLoading: loadingAlerts } = useStockAlerts(days);
   const { data: coverage, isLoading: loadingCoverage } = useStockCoverage(days);
   const { data: purchaseOrder, isLoading: loadingPO } = usePurchaseOrder(days);
   const { data: summary, isLoading: loadingSummary } = useStockSummary();
+  const importMutation = useImportStock();
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
+
+  const handleImport = async () => {
+    if (!selectedFile) return;
+
+    importMutation.mutate(selectedFile, {
+      onSuccess: () => {
+        setSelectedFile(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+      },
+    });
+  };
 
   const handleExportPO = () => {
     if (!purchaseOrder) return;
@@ -71,6 +96,167 @@ export default function StockPage() {
           Exportar Orden de Compra
         </Button>
       </div>
+
+      {/* Import Stock Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Upload className="h-5 w-5" />
+            Importar Inventario
+          </CardTitle>
+          <CardDescription>
+            Sube un archivo Excel con tu inventario para actualizar el stock
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div
+            className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+              selectedFile
+                ? "border-primary bg-primary/5"
+                : "border-muted-foreground/25 hover:border-muted-foreground/50"
+            }`}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".xlsx,.xls"
+              onChange={handleFileSelect}
+              className="hidden"
+              id="stock-file-upload"
+            />
+            <label htmlFor="stock-file-upload" className="cursor-pointer">
+              <div className="flex flex-col items-center gap-2">
+                {selectedFile ? (
+                  <>
+                    <FileSpreadsheet className="h-10 w-10 text-primary" />
+                    <div>
+                      <p className="font-medium">{selectedFile.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {(selectedFile.size / 1024).toFixed(2)} KB
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setSelectedFile(null);
+                        if (fileInputRef.current) {
+                          fileInputRef.current.value = "";
+                        }
+                      }}
+                    >
+                      Cambiar archivo
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-10 w-10 text-muted-foreground" />
+                    <div>
+                      <p className="font-medium">Click para seleccionar archivo</p>
+                      <p className="text-sm text-muted-foreground">
+                        Formatos: .xlsx, .xls
+                      </p>
+                    </div>
+                  </>
+                )}
+              </div>
+            </label>
+          </div>
+
+          <div className="flex gap-3">
+            <Button
+              onClick={handleImport}
+              disabled={!selectedFile || importMutation.isPending}
+              className="flex-1"
+            >
+              {importMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Importando...
+                </>
+              ) : (
+                <>
+                  <Upload className="h-4 w-4 mr-2" />
+                  Importar Stock
+                </>
+              )}
+            </Button>
+          </div>
+
+          {/* Import Result */}
+          {importMutation.isSuccess && importMutation.data && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                <div className="flex-1">
+                  <p className="font-medium text-green-900">Stock importado exitosamente</p>
+                  <p className="text-sm text-green-700 mt-1">{importMutation.data.message}</p>
+                  <div className="grid grid-cols-3 gap-4 mt-3">
+                    <div>
+                      <p className="text-xs text-green-700">Importados</p>
+                      <p className="text-lg font-bold text-green-900">
+                        {importMutation.data.data.imported}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-green-700">Total en BD</p>
+                      <p className="text-lg font-bold text-green-900">
+                        {importMutation.data.data.total_products}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-green-700">Errores</p>
+                      <p className="text-lg font-bold text-green-900">
+                        {importMutation.data.data.errors}
+                      </p>
+                    </div>
+                  </div>
+                  {importMutation.data.data.error_details.length > 0 && (
+                    <div className="mt-3 text-sm text-yellow-700">
+                      <p className="font-medium">Advertencias:</p>
+                      <ul className="list-disc list-inside mt-1">
+                        {importMutation.data.data.error_details.slice(0, 5).map((err, i) => (
+                          <li key={i}>{err}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {importMutation.isError && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <XCircle className="h-5 w-5 text-red-600 mt-0.5" />
+                <div>
+                  <p className="font-medium text-red-900">Error al importar</p>
+                  <p className="text-sm text-red-700 mt-1">
+                    {importMutation.error?.message || "Ocurrió un error inesperado"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Format Instructions */}
+          <div className="bg-muted/50 rounded-lg p-4 text-sm">
+            <p className="font-medium mb-2">Columnas requeridas en el Excel:</p>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-muted-foreground">
+              <span>• producto (nombre)</span>
+              <span>• categoria</span>
+              <span>• cantidad_kg</span>
+              <span>• cantidad_unidades</span>
+              <span>• precio_costo</span>
+              <span>• precio_venta</span>
+              <span>• proveedor</span>
+              <span>• stock_minimo_kg</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-4">

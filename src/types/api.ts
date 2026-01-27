@@ -331,3 +331,16 @@ export interface PredictionNextDaysRequest {
   days: number;
   model_type?: string;
 }
+
+// ==================== STOCK IMPORT TYPES ====================
+
+export interface StockImportResponse {
+  success: boolean;
+  message: string;
+  data: {
+    imported: number;
+    errors: number;
+    error_details: string[];
+    total_products: number;
+  };
+}

@@ -25,6 +25,7 @@ import type {
   TopSellersResponse,
   ProductTrendsResponse,
   StockCoverageAnalysis,
+  StockImportResponse,
 } from "@/types/api";
 import { env } from "@/lib/env";
 
@@ -197,6 +198,26 @@ class APIClient {
 
   async analyzeStockCoverage(days: number = 30): Promise<StockCoverageAnalysis> {
     return this.request<StockCoverageAnalysis>(`/api/v1/stock/analysis/coverage?days=${days}`);
+  }
+
+  async importStockExcel(file: File): Promise<StockImportResponse> {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch(
+      `${this.baseURL}/api/v1/stock/import/excel`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: response.statusText }));
+      throw new Error(error.detail || `HTTP ${response.status}`);
+    }
+
+    return response.json();
   }
 
   // ==================== DATA ====================

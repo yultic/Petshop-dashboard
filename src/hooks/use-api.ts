@@ -222,6 +222,20 @@ export function useDeleteStock() {
   });
 }
 
+export function useImportStock() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (file: File) => apiClient.importStockExcel(file),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.stock.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.stock.summary });
+      queryClient.invalidateQueries({ queryKey: queryKeys.stock.alerts(30) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.stock.coverage(30) });
+    },
+  });
+}
+
 // ==================== DATA ====================
 
 export function useDataStats() {
