@@ -133,7 +133,7 @@ class APIClient {
     minRecords: number = 30
   ): Promise<AvailableEntitiesResponse> {
     return this.request<AvailableEntitiesResponse>(
-      `/api/v1/products/analysis/available/${granularity}?min_records=${minRecords}`
+      `/api/v1/products/available/${granularity}?min_records=${minRecords}`
     );
   }
 
@@ -179,7 +179,7 @@ class APIClient {
   }
 
   async getStockAlerts(days: number = 30): Promise<StockAlertResponse[]> {
-    return this.request<StockAlertResponse[]>(`/api/v1/stock/analysis/alerts/all?days=${days}`);
+    return this.request<StockAlertResponse[]>(`/api/v1/stock/alerts/all?days=${days}`);
   }
 
   async getCriticalAlerts(days: number = 30): Promise<StockAlertResponse[]> {
@@ -192,7 +192,7 @@ class APIClient {
   ): Promise<PurchaseOrderResponse> {
     const params = new URLSearchParams({ days: days.toString() });
     if (proveedor) params.append("proveedor", proveedor);
-    return this.request<PurchaseOrderResponse>(`/api/v1/stock/analysis/purchase-order?${params}`);
+    return this.request<PurchaseOrderResponse>(`/api/v1/stock/purchase-order?${params}`);
   }
 
   async analyzeStockCoverage(days: number = 30): Promise<StockCoverageAnalysis> {
