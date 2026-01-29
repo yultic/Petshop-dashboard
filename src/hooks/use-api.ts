@@ -1,287 +1,140 @@
-/**
- * Custom hooks usando TanStack Query
- * Manejo centralizado de estado server-side
- */
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiClient } from "@/lib/api-client";
-import type {
-  ProductPredictionRequest,
-  StockItemCreate,
-  StockAdjustRequest,
-} from "@/types/api";
+import { useQuery } from "@tanstack/react-query";
+import * as apiClient from "@/lib/api-client";
+import type { Granularity } from "@/types/api";
 
-// ==================== QUERY KEYS ====================
 
 export const queryKeys = {
   health: ["health"] as const,
-  apiInfo: ["api-info"] as const,
-  predictions: {
-    all: ["predictions"] as const,
-    nextDays: (days: number) => ["predictions", "next-days", days] as const,
-    range: (start: string, end: string) => ["predictions", "range", start, end] as const,
-  },
-  products: {
-    all: ["products"] as const,
-    prediction: (req: ProductPredictionRequest) => ["products", "prediction", req] as const,
-    available: (granularity: string) => ["products", "available", granularity] as const,
-    demandSummary: (days: number) => ["products", "demand-summary", days] as const,
-    topSellers: (days: number, top: number, granularity: string) => 
-      ["products", "top-sellers", days, top, granularity] as const,
-    trends: (entity: string, granularity: string) => 
-      ["products", "trends", entity, granularity] as const,
-  },
+  predictions: (granularity: Granularity, name: string, days: number) => ["predictions", granularity, name, days] as const,
+  demandSummary: (days: number) => ["demandSummary", days] as const,
+  demandByCategory: (days: number) => ["demandByCategory", days] as const,
+  demandByBrand: (days: number, top: number) => ["demandByBrand", days, top] as const,
   stock: {
     all: ["stock"] as const,
-    summary: ["stock", "summary"] as const,
-    item: (producto: string) => ["stock", "item", producto] as const,
     alerts: (days: number) => ["stock", "alerts", days] as const,
-    criticalAlerts: (days: number) => ["stock", "alerts", "critical", days] as const,
-    coverage: (days: number) => ["stock", "coverage", days] as const,
-    purchaseOrder: (days: number, proveedor?: string) => 
-      ["stock", "purchase-order", days, proveedor] as const,
+    purchaseOrder: (days: number) => ["stock", "purchaseOrder", days] as const,
   },
-  data: {
-    stats: ["data", "stats"] as const,
-    historical: (start?: string, end?: string, limit?: number) => 
-      ["data", "historical", start, end, limit] as const,
-  },
-  models: {
-    all: ["models"] as const,
-    metrics: (modelId: string) => ["models", "metrics", modelId] as const,
-    performance: ["models", "performance"] as const,
-  },
+  availableEntities: (granularity: Granularity) => ["availableEntities", granularity] as const,
 };
 
-// ==================== HEALTH & INFO ====================
 
 export function useHealth() {
   return useQuery({
     queryKey: queryKeys.health,
     queryFn: () => apiClient.getHealth(),
-    refetchInterval: 30000, // Refresh every 30s
+    refetchInterval: 60000, // Refetch every minute
   });
 }
 
-export function useAPIInfo() {
-  return useQuery({
-    queryKey: queryKeys.apiInfo,
-    queryFn: () => apiClient.getAPIInfo(),
-  });
-}
 
-// ==================== PREDICTIONS ====================
-
-export function usePredictNextDays(days: number, enabled: boolean = true) {
+export function usePredict(
+  granularity: Granularity,
+  name: string,
+  days: number = 30,
+  enabled: boolean = true
+) {
   return useQuery({
-    queryKey: queryKeys.predictions.nextDays(days),
-    queryFn: () => apiClient.predictNextDays(days),
+    queryKey: queryKeys.predictions(granularity, name, days),
+    queryFn: () => {
+      if (granularity === 'producto') {
+        return apiClient.predictProduct(name, days);
+      }
+      return apiClient.predict(granularity, name, days);
+    },
     enabled,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
 
-export function usePredictRange(startDate: string, endDate: string, enabled: boolean = true) {
-  return useQuery({
-    queryKey: queryKeys.predictions.range(startDate, endDate),
-    queryFn: () => apiClient.predictRange(startDate, endDate),
-    enabled,
-  });
-}
-
-// ==================== PRODUCTS ====================
-
-export function usePredictProduct(request: ProductPredictionRequest, enabled: boolean = true) {
-  return useQuery({
-    queryKey: queryKeys.products.prediction(request),
-    queryFn: () => apiClient.predictProduct(request),
-    enabled,
-  });
-}
-
-export function useAvailableEntities(granularity: string, minRecords: number = 30) {
-  return useQuery({
-    queryKey: queryKeys.products.available(granularity),
-    queryFn: () => apiClient.getAvailableEntities(granularity, minRecords),
-  });
-}
-
 export function useDemandSummary(days: number = 30) {
   return useQuery({
-    queryKey: queryKeys.products.demandSummary(days),
+    queryKey: queryKeys.demandSummary(days),
     queryFn: () => apiClient.getDemandSummary(days),
-    staleTime: 10 * 60 * 1000,
+    staleTime: 10 * 60 * 1000, // 10 minutes
   });
 }
 
-export function useTopSellers(days: number = 30, top: number = 20, granularity: string = "producto") {
-  return useQuery({
-    queryKey: queryKeys.products.topSellers(days, top, granularity),
-    queryFn: () => apiClient.getTopSellers(days, top, granularity),
-  });
+export function useDemandByCategory(days: number = 30) {
+    return useQuery({
+        queryKey: queryKeys.demandByCategory(days),
+        queryFn: () => apiClient.getDemandByCategory(days),
+        staleTime: 10 * 60 * 1000,
+    });
 }
 
-export function useProductTrends(entityName: string, granularity: string = "producto") {
-  return useQuery({
-    queryKey: queryKeys.products.trends(entityName, granularity),
-    queryFn: () => apiClient.getProductTrends(entityName, granularity),
-  });
+export function useDemandByBrand(days: number = 30, top: number = 20) {
+    return useQuery({
+        queryKey: queryKeys.demandByBrand(days, top),
+        queryFn: () => apiClient.getDemandByBrand(days, top),
+        staleTime: 10 * 60 * 1000,
+    });
 }
 
-// ==================== STOCK ====================
-
-export function useAllStock() {
-  return useQuery({
-    queryKey: queryKeys.stock.all,
-    queryFn: () => apiClient.getAllStock(),
-  });
-}
-
-export function useStockSummary() {
-  return useQuery({
-    queryKey: queryKeys.stock.summary,
-    queryFn: () => apiClient.getStockSummary(),
-  });
-}
-
-export function useStockItem(producto: string, enabled: boolean = true) {
-  return useQuery({
-    queryKey: queryKeys.stock.item(producto),
-    queryFn: () => apiClient.getStockItem(producto),
-    enabled,
-  });
-}
-
-export function useStockAlerts(days: number = 30) {
+export function useStockAlerts(days: number = 30, enabled: boolean = true) {
   return useQuery({
     queryKey: queryKeys.stock.alerts(days),
     queryFn: () => apiClient.getStockAlerts(days),
-    staleTime: 5 * 60 * 1000,
+    enabled,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
 
-export function useCriticalAlerts(days: number = 30) {
+export function useCriticalStockAlerts(days: number = 30, enabled: boolean = true) {
+    return useQuery({
+        queryKey: [...queryKeys.stock.alerts(days), "critical"],
+        queryFn: async () => {
+            const alerts = await apiClient.getStockAlerts(days);
+            return alerts.filter(a => a.tipo_alerta === 'critico' || a.tipo_alerta === 'agotado');
+        },
+        enabled,
+        staleTime: 5 * 60 * 1000,
+    });
+}
+
+
+export function useSuggestedPurchaseOrder(days: number = 30) {
+    return useQuery({
+        queryKey: queryKeys.stock.purchaseOrder(days),
+        queryFn: () => apiClient.getSuggestedPurchaseOrder(days),
+        staleTime: 10 * 60 * 1000,
+    });
+}
+
+export function useCurrentStock() {
+    return useQuery({
+        queryKey: queryKeys.stock.all,
+        queryFn: () => apiClient.getCurrentStock(),
+        staleTime: 5 * 60 * 1000,
+    });
+}
+
+export function useStockSummary(days: number = 30) {
+    const { data: stock } = useCurrentStock();
+    const { data: alerts } = useStockAlerts(days);
+
+    return useQuery({
+        queryKey: ["stockSummary", stock, alerts],
+        queryFn: () => {
+            if (!stock || !alerts) return null;
+            const summary = {
+                total_productos: stock.length,
+                alertas: {
+                    criticos: alerts.filter(a => a.tipo_alerta === 'critico' || a.tipo_alerta === 'agotado').length,
+                    bajos: alerts.filter(a => a.tipo_alerta === 'bajo').length,
+                    ok: alerts.filter(a => a.tipo_alerta === 'ok').length,
+                }
+            };
+            return summary;
+        },
+        enabled: !!stock && !!alerts,
+        staleTime: 5 * 60 * 1000,
+    });
+}
+
+export function useAvailableEntities(granularity: Granularity) {
   return useQuery({
-    queryKey: queryKeys.stock.criticalAlerts(days),
-    queryFn: () => apiClient.getCriticalAlerts(days),
-    refetchInterval: 60000, // Refresh every minute
-  });
-}
-
-export function useStockCoverage(days: number = 30) {
-  return useQuery({
-    queryKey: queryKeys.stock.coverage(days),
-    queryFn: () => apiClient.analyzeStockCoverage(days),
-  });
-}
-
-export function usePurchaseOrder(days: number = 30, proveedor?: string) {
-  return useQuery({
-    queryKey: queryKeys.stock.purchaseOrder(days, proveedor),
-    queryFn: () => apiClient.generatePurchaseOrder(days, proveedor),
-  });
-}
-
-// ==================== STOCK MUTATIONS ====================
-
-export function useCreateOrUpdateStock() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (item: StockItemCreate) => apiClient.createOrUpdateStock(item),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.stock.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.stock.summary });
-    },
-  });
-}
-
-export function useAdjustStock() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ producto, adjustment }: { producto: string; adjustment: StockAdjustRequest }) =>
-      apiClient.adjustStock(producto, adjustment),
-    onSuccess: (_, { producto }) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.stock.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.stock.item(producto) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.stock.summary });
-    },
-  });
-}
-
-export function useDeleteStock() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (producto: string) => apiClient.deleteStockItem(producto),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.stock.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.stock.summary });
-    },
-  });
-}
-
-export function useImportStock() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (file: File) => apiClient.importStockExcel(file),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.stock.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.stock.summary });
-      queryClient.invalidateQueries({ queryKey: queryKeys.stock.alerts(30) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.stock.coverage(30) });
-    },
-  });
-}
-
-// ==================== DATA ====================
-
-export function useDataStats() {
-  return useQuery({
-    queryKey: queryKeys.data.stats,
-    queryFn: () => apiClient.getDataStats(),
-    staleTime: 30 * 60 * 1000, // 30 minutes
-  });
-}
-
-export function useHistoricalData(startDate?: string, endDate?: string, limit: number = 1000) {
-  return useQuery({
-    queryKey: queryKeys.data.historical(startDate, endDate, limit),
-    queryFn: () => apiClient.getHistoricalData(startDate, endDate, limit),
-  });
-}
-
-// ==================== MODELS ====================
-
-export function useModels() {
-  return useQuery({
-    queryKey: queryKeys.models.all,
-    queryFn: () => apiClient.listModels(),
-  });
-}
-
-export function useModelPerformance() {
-  return useQuery({
-    queryKey: queryKeys.models.performance,
-    queryFn: () => apiClient.getModelPerformance(),
-  });
-}
-
-// ==================== UPLOAD ====================
-
-export function useUploadExcel() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ file, retrain }: { file: File; retrain?: boolean }) =>
-      apiClient.uploadExcel(file, retrain ?? true),
-    onSuccess: () => {
-      // Invalidate all data-related queries
-      queryClient.invalidateQueries({ queryKey: queryKeys.data.stats });
-      queryClient.invalidateQueries({ queryKey: queryKeys.predictions.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.models.all });
-    },
+    queryKey: queryKeys.availableEntities(granularity),
+    queryFn: () => apiClient.getAvailableEntities(granularity),
   });
 }

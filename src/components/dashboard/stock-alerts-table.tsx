@@ -16,12 +16,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { StockAlertResponse } from "@/types/api";
+import { StockAlert } from "@/types/api";
 import { getAlertBadgeVariant, formatNumber } from "@/lib/utils";
 import { AlertTriangle, AlertCircle, Info } from "lucide-react";
 
 interface StockAlertsTableProps {
-  alerts: StockAlertResponse[];
+  alerts: StockAlert[];
   title?: string;
   description?: string;
   maxRows?: number;

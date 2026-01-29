@@ -5,9 +5,8 @@ import { SalesForecastChart } from "@/components/charts/sales-forecast-chart";
 import { StockAlertsTable } from "@/components/dashboard/stock-alerts-table";
 import { QueryError } from "@/components/query-error";
 import {
-  usePredictNextDays,
-  useDataStats,
-  useCriticalAlerts,
+  usePredict,
+  useCriticalStockAlerts,
   useStockSummary,
 } from "@/hooks/use-api";
 import {
@@ -27,42 +26,38 @@ export default function DashboardPage() {
     isLoading: loadingPredictions,
     isError: errorPredictions,
     refetch: refetchPredictions,
-  } = usePredictNextDays(30);
-  const { data: stats } = useDataStats();
+  } = usePredict("categoria", "Alimento", 30);
+
   const {
     data: criticalAlerts,
     isLoading: loadingAlerts,
     isError: errorAlerts,
     refetch: refetchAlerts,
-  } = useCriticalAlerts(30);
+  } = useCriticalStockAlerts(30);
+
   const {
     data: stockSummary,
     isLoading: loadingStock,
     isError: errorStock,
     refetch: refetchStock,
-  } = useStockSummary();
+  } = useStockSummary(30);
 
-  // Calculate KPIs from predictions
-  const totalPredictedSales = predictions?.reduce(
-    (sum, p) => sum + p.predicted_sales,
-    0
-  ) || 0;
-  const avgDailySales = predictions ? totalPredictedSales / predictions.length : 0;
-  const next7DaysSales = predictions
-    ?.slice(0, 7)
-    .reduce((sum, p) => sum + p.predicted_sales, 0) || 0;
+  const totalPredictedSales = predictions?.total || 0;
+  const avgDailySales = predictions && predictions.days > 0 ? totalPredictedSales / predictions.days : 0;
+  const next7DaysSales =
+    predictions?.predictions
+      ?.slice(0, 7)
+      .reduce((sum, p) => sum + (p.predicted_sales || 0), 0) || 0;
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Dashboard General</h1>
         <p className="text-muted-foreground mt-1">
-          Resumen ejecutivo de predicciones y estado del inventario
+          Resumen ejecutivo de predicciones y estado del inventario.
         </p>
       </div>
 
-      {/* KPI Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <KPICard
           title="Ventas Proyectadas (30d)"
@@ -98,7 +93,6 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Stock Alerts Summary Cards */}
       {errorStock ? (
         <QueryError
           title="Error al cargar resumen de stock"
@@ -172,12 +166,11 @@ export default function DashboardPage() {
       </div>
       )}
 
-      {/* Charts Grid */}
       <div className="grid gap-6 lg:grid-cols-1">
         {errorPredictions ? (
           <QueryError
             title="Error al cargar predicciones"
-            message="No se pudieron cargar las predicciones de ventas."
+            message="No se pudieron cargar las predicciones de ventas para la categoría 'Alimento'."
             onRetry={() => refetchPredictions()}
           />
         ) : loadingPredictions ? (
@@ -190,12 +183,11 @@ export default function DashboardPage() {
               <Skeleton className="h-[350px] w-full" />
             </CardContent>
           </Card>
-        ) : predictions && predictions.length > 0 ? (
-          <SalesForecastChart data={predictions} />
+        ) : predictions && predictions.predictions.length > 0 ? (
+          <SalesForecastChart data={predictions.predictions} />
         ) : null}
       </div>
 
-      {/* Alerts Table */}
       {errorAlerts ? (
         <QueryError
           title="Error al cargar alertas"
@@ -220,51 +212,6 @@ export default function DashboardPage() {
           maxRows={10}
         />
       ) : null}
-
-      {/* Data Stats */}
-      {stats && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Datos Históricos</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-4">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Total Registros
-                </p>
-                <p className="text-2xl font-bold mt-1">
-                  {stats.total_records.toLocaleString()}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Días con Ventas
-                </p>
-                <p className="text-2xl font-bold mt-1">
-                  {stats.business_days}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Productos Únicos
-                </p>
-                <p className="text-2xl font-bold mt-1">
-                  {stats.products_count}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Categorías
-                </p>
-                <p className="text-2xl font-bold mt-1">
-                  {stats.categories_count}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }

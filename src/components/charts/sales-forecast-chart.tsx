@@ -29,13 +29,11 @@ export function SalesForecastChart({
   description = "Proyección de ventas próximos días hábiles",
   showConfidenceInterval = false,
 }: SalesForecastChartProps) {
-  const chartData = data.map((item) => ({
-    date: formatDateShort(item.date),
+  const chartData = data[0]?.predictions?.map((item) => ({
+    date :formatDateShort(item.date),
     ventas: item.predicted_sales,
-    lower: item.confidence_interval?.lower,
-    upper: item.confidence_interval?.upper,
     day: item.day_of_week,
-  }));
+  })) || [];
 
   return (
     <Card>
