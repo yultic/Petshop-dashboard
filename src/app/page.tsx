@@ -184,7 +184,14 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         ) : predictions && predictions.predictions.length > 0 ? (
-          <SalesForecastChart data={predictions.predictions} />
+          <SalesForecastChart data={[{
+            entity: predictions.entity,
+            granularity: predictions.granularity,
+            days: predictions.days,
+            target: predictions.target,
+            total: predictions.total,
+            predictions: predictions.predictions
+          }]} />
         ) : null}
       </div>
 
