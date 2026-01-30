@@ -1,8 +1,8 @@
-
+'use client'
 import { useQuery } from "@tanstack/react-query";
 import * as apiClient from "@/lib/api-client";
 import type { Granularity } from "@/types/api";
-
+import { useMutation } from '@tanstack/react-query';
 
 export const queryKeys = {
   health: ["health"] as const,
@@ -17,6 +17,29 @@ export const queryKeys = {
   },
   availableEntities: (granularity: Granularity) => ["availableEntities", granularity] as const,
 };
+
+export function useUploadExcel() {
+  return useMutation({
+    mutationFn: async (data: { file: File; retrain?: boolean }) => {
+      const formData = new FormData();
+      formData.append('file', data.file);
+      const params = new URLSearchParams();
+      if (data.retrain !== undefined) {
+        params.set('retrain', data.retrain.toString());
+      }
+      const query = params.toString() ? `?${params.toString()}` : '';
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/upload/excel${query}`,
+        { method: 'POST', body: formData }
+      );
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ message: res.statusText }));
+        throw new Error(error.message || `Request failed with status ${res.status}`);
+      }
+      return res.json();
+    },
+  });
+}
 
 
 export function useHealth() {
