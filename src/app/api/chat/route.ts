@@ -1,4 +1,4 @@
-import { streamText, stepCountIs } from "ai";
+import { streamText, stepCountIs, convertToModelMessages } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
 import { petshopTools } from "@/lib/chat/tools";
 import { getServerEnv } from "@/lib/env";
@@ -29,7 +29,7 @@ Reglas:
 - Sé conciso pero informativo. Incluye datos relevantes en tu respuesta
 - Si hay un error en una herramienta, explica el problema al usuario de forma amigable
 - Puedes llamar múltiples herramientas en una sola respuesta si es necesario`,
-    messages,
+    messages: await convertToModelMessages(messages),
     tools: petshopTools,
     stopWhen: stepCountIs(5),
   });
