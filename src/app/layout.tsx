@@ -6,7 +6,7 @@ import { QueryProvider } from "@/components/providers/query-provider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Petshop AI - Asistente Inteligente",
+  title: "Petshop Kat - Asistente Inteligente",
   description: "Asistente de IA para gestión de ventas e inventario de petshop",
 };
 

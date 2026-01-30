@@ -71,7 +71,7 @@ export function ChatInterface() {
               <div className="mb-4 rounded-full bg-primary/10 p-4">
                 <PawPrint className="h-8 w-8 text-primary" />
               </div>
-              <h2 className="text-xl font-semibold">Petshop AI</h2>
+              <h2 className="text-xl font-semibold">Petshop Kat AI</h2>
               <p className="mt-2 max-w-md text-sm text-muted-foreground">
                 Pregunta sobre ventas, inventario, predicciones de demanda o
                 sube un archivo Excel para importar datos.
@@ -81,7 +81,9 @@ export function ChatInterface() {
                   "¿Qué productos están en stock crítico?",
                   "Predice ventas de Alimento para 30 días",
                   "¿Cuáles son las marcas más vendidas?",
+                  "¿Cuáles son las marcas menos vendidas?",
                   "Genera una orden de compra sugerida",
+                  "Preciona y ve por una empanada.",
                 ].map((suggestion) => (
                   <button
                     key={suggestion}
