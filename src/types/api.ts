@@ -72,34 +72,42 @@ export const StockAlertSchema = z.object({
   producto: z.string(),
   categoria: z.string(),
   stock_actual_kg: z.number(),
+  stock_minimo_kg: z.number(),
   demanda_proyectada_kg: z.number(),
   dias_cobertura: z.number(),
   tipo_alerta: z.enum(["agotado", "critico", "bajo", "ok"]),
-  cantidad_sugerida_kg: z.number(),
+  recomendacion_compra_kg: z.number(),
+  prioridad: z.number(),
 });
 export const StockAlertsResponseSchema = z.array(StockAlertSchema);
 export type StockAlert = z.infer<typeof StockAlertSchema>;
 
 export const PurchaseOrderItemSchema = z.object({
   producto: z.string(),
-  cantidad_sugerida_kg: z.number(),
-  stock_actual_kg: z.number(),
-  demanda_proyectada_kg: z.number(),
+  categoria: z.string(),
+  cantidad_kg: z.number(),
+  proveedor: z.string(),
+  precio_unitario: z.number(),
+  costo_total: z.number(),
+  prioridad: z.string(),
 });
 export const PurchaseOrderResponseSchema = z.object({
-  periodo_dias: z.number(),
-  proveedor: z.string().optional(),
-  orden_compra: z.array(PurchaseOrderItemSchema),
+  fecha_generacion: z.string(),
+  items: z.array(PurchaseOrderItemSchema),
 });
 export type PurchaseOrderResponse = z.infer<typeof PurchaseOrderResponseSchema>;
 
 export const StockItemSchema = z.object({
   producto: z.string(),
   categoria: z.string(),
-  stock_actual_kg: z.number(),
-  unidad_medida: z.string(),
+  cantidad_kg: z.number(),
+  cantidad_unidades: z.number(),
+  precio_costo: z.number(),
+  precio_venta: z.number(),
   proveedor: z.string().nullable(),
-  fecha_ultima_actualizacion: z.string(),
+  fecha_actualizacion: z.string(),
+  stock_minimo_kg: z.number(),
+  stock_minimo_unidades: z.number(),
 });
 export const StockResponseSchema = z.array(StockItemSchema);
 export type StockItem = z.infer<typeof StockItemSchema>;

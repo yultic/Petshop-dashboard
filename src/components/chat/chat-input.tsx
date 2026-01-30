@@ -38,7 +38,7 @@ export function ChatInput({
   };
 
   return (
-    <form onSubmit={onSubmit} className="border-t p-4">
+    <form onSubmit={onSubmit} className="border-t p-3 sm:p-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:pb-[calc(1rem+env(safe-area-inset-bottom))]">
       <div className="mx-auto flex max-w-3xl items-end gap-2">
         <input
           ref={fileInputRef}

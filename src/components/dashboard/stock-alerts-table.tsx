@@ -83,10 +83,10 @@ export function StockAlertsTable({
               <TableHeader>
                 <TableRow>
                   <TableHead>Producto</TableHead>
-                  <TableHead>Categoría</TableHead>
+                  <TableHead className="hidden sm:table-cell">Categoría</TableHead>
                   <TableHead className="text-right">Stock Actual</TableHead>
-                  <TableHead className="text-right">Demanda (30d)</TableHead>
-                  <TableHead className="text-center">Cobertura</TableHead>
+                  <TableHead className="hidden sm:table-cell text-right">Demanda (30d)</TableHead>
+                  <TableHead className="hidden sm:table-cell text-center">Cobertura</TableHead>
                   <TableHead>Estado</TableHead>
                 </TableRow>
               </TableHeader>
@@ -99,16 +99,16 @@ export function StockAlertsTable({
                         {alert.producto}
                       </div>
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
+                    <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">
                       {alert.categoria}
                     </TableCell>
                     <TableCell className="text-right font-mono">
                       {formatNumber(alert.stock_actual_kg, 1)} kg
                     </TableCell>
-                    <TableCell className="text-right font-mono">
+                    <TableCell className="hidden sm:table-cell text-right font-mono">
                       {formatNumber(alert.demanda_proyectada_kg, 1)} kg
                     </TableCell>
-                    <TableCell className="text-center">
+                    <TableCell className="hidden sm:table-cell text-center">
                       <span
                         className={`font-medium ${
                           alert.dias_cobertura < 7

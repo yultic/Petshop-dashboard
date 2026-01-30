@@ -35,11 +35,11 @@ export function CurrentStockView({ data }: CurrentStockViewProps) {
             <TableHeader>
               <TableRow>
                 <TableHead>Producto</TableHead>
-                <TableHead>Categoría</TableHead>
-                <TableHead className="text-right">Stock</TableHead>
-                <TableHead>Unidad</TableHead>
-                <TableHead>Proveedor</TableHead>
-                <TableHead>Actualización</TableHead>
+                <TableHead className="hidden sm:table-cell">Categoría</TableHead>
+                <TableHead className="text-right">Stock (kg)</TableHead>
+                <TableHead className="text-right">Stock (uds)</TableHead>
+                <TableHead className="hidden sm:table-cell">Proveedor</TableHead>
+                <TableHead className="hidden sm:table-cell">Actualización</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -48,20 +48,20 @@ export function CurrentStockView({ data }: CurrentStockViewProps) {
                   <TableCell className="font-medium">
                     {item.producto}
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
+                  <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">
                     {item.categoria}
                   </TableCell>
                   <TableCell className="text-right font-mono">
-                    {formatNumber(item.stock_actual_kg, 1)}
+                    {item.cantidad_kg > 0 ? formatNumber(item.cantidad_kg, 1) : "—"}
                   </TableCell>
-                  <TableCell className="text-sm">
-                    {item.unidad_medida}
+                  <TableCell className="text-right font-mono">
+                    {item.cantidad_unidades > 0 ? item.cantidad_unidades : "—"}
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {item.proveedor ?? "—"}
+                  <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">
+                    {item.proveedor && item.proveedor !== "nan" ? item.proveedor : "—"}
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {formatDateShort(item.fecha_ultima_actualizacion)}
+                  <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">
+                    {formatDateShort(item.fecha_actualizacion)}
                   </TableCell>
                 </TableRow>
               ))}

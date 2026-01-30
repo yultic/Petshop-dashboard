@@ -51,9 +51,10 @@ export async function getHealth(): Promise<HealthResponse> {
 export async function predict(
   granularity: Omit<Granularity, "producto">,
   name: string,
-  days: number = 30
+  days: number = 30,
+  target: "kilos" | "ventas" = "kilos"
 ): Promise<PredictionResponse> {
-  const url = `${API_BASE}/api/v1/products/predict/${granularity}/${encodeURIComponent(name)}?days=${days}`;
+  const url = `${API_BASE}/api/v1/products/predict/${granularity}/${encodeURIComponent(name)}?days=${days}&target=${target}`;
   return fetchAndValidate(url, PredictionResponseSchema);
 }
 

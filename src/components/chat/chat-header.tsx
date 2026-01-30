@@ -2,7 +2,7 @@
 
 import { useHealth } from "@/hooks/use-api";
 import { Badge } from "@/components/ui/badge";
-import { Bot } from "lucide-react";
+import { PawPrint } from "lucide-react";
 
 export function ChatHeader() {
   const { data: health, isError } = useHealth();
@@ -10,10 +10,10 @@ export function ChatHeader() {
   return (
     <header className="flex items-center justify-between border-b px-4 py-3 sm:px-6">
       <div className="flex items-center gap-2">
-        <Bot className="h-6 w-6 text-primary" />
+        <PawPrint className="h-6 w-6 text-primary" />
         <h1 className="text-lg font-semibold">Petshop AI</h1>
       </div>
-      <Badge variant={isError ? "destructive" : "secondary"}>
+      <Badge variant={isError ? "destructive" : "secondary"} className="max-w-[140px] truncate sm:max-w-none">
         {isError
           ? "Backend offline"
           : health

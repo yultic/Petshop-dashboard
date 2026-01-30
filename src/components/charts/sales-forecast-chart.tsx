@@ -10,11 +10,10 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
   Area,
   AreaChart,
 } from "recharts";
-import { formatCurrency, formatDateShort } from "@/lib/utils";
+import { formatCurrency, formatNumber, formatDateShort } from "@/lib/utils";
 
 interface SalesForecastChartProps {
   data: PredictionResponse[];
@@ -29,11 +28,20 @@ export function SalesForecastChart({
   description = "Proyección de ventas próximos días hábiles",
   showConfidenceInterval = false,
 }: SalesForecastChartProps) {
-  const chartData = data[0]?.predictions?.map((item) => ({
-    date :formatDateShort(item.date),
-    ventas: item.predicted_sales,
+  const prediction = data[0];
+  const isKilos = prediction?.target === "kilos";
+
+  const chartData = prediction?.predictions?.map((item) => ({
+    date: formatDateShort(item.date),
+    valor: isKilos ? item.predicted_kilos : item.predicted_sales,
     day: item.day_of_week,
   })) || [];
+
+  const formatValue = (value: number) =>
+    isKilos ? `${formatNumber(value, 1)} kg` : formatCurrency(value);
+
+  const formatYAxis = (value: number) =>
+    isKilos ? `${formatNumber(value, 0)} kg` : `${(value / 1000).toFixed(0)}k`;
 
   return (
     <Card>
@@ -42,7 +50,7 @@ export function SalesForecastChart({
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={350}>
+        <ResponsiveContainer width="100%" height="100%" className="h-[250px] sm:h-[350px]">
           {showConfidenceInterval ? (
             <AreaChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -56,7 +64,7 @@ export function SalesForecastChart({
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                tickFormatter={formatYAxis}
               />
               <Tooltip
                 content={({ active, payload }) => {
@@ -67,18 +75,9 @@ export function SalesForecastChart({
                           <div className="font-medium">
                             {payload[0]?.payload.date}
                           </div>
-                          <div className="text-sm text-muted-foreground">
-                            {payload[0]?.payload.day}
-                          </div>
                           <div className="font-bold text-primary">
-                            {formatCurrency(payload[0]?.payload.ventas)}
+                            {formatValue(payload[0]?.payload.valor)}
                           </div>
-                          {payload[0]?.payload.lower && (
-                            <div className="text-xs text-muted-foreground">
-                              Rango: {formatCurrency(payload[0]?.payload.lower)} -{" "}
-                              {formatCurrency(payload[0]?.payload.upper)}
-                            </div>
-                          )}
                         </div>
                       </div>
                     );
@@ -88,28 +87,11 @@ export function SalesForecastChart({
               />
               <Area
                 type="monotone"
-                dataKey="upper"
-                stackId="1"
-                stroke="none"
-                fill="hsl(var(--primary))"
-                fillOpacity={0.1}
-              />
-              <Area
-                type="monotone"
-                dataKey="ventas"
-                stackId="1"
+                dataKey="valor"
                 stroke="hsl(var(--primary))"
                 fill="hsl(var(--primary))"
                 fillOpacity={0.3}
                 strokeWidth={2}
-              />
-              <Area
-                type="monotone"
-                dataKey="lower"
-                stackId="1"
-                stroke="none"
-                fill="hsl(var(--primary))"
-                fillOpacity={0.1}
               />
             </AreaChart>
           ) : (
@@ -117,15 +99,15 @@ export function SalesForecastChart({
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
               <XAxis
                 dataKey="date"
-                fontSize={12}
+                fontSize={10}
                 tickLine={false}
                 axisLine={false}
               />
               <YAxis
-                fontSize={12}
+                fontSize={10}
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                tickFormatter={formatYAxis}
               />
               <Tooltip
                 content={({ active, payload }) => {
@@ -136,11 +118,8 @@ export function SalesForecastChart({
                           <div className="font-medium">
                             {payload[0]?.payload.date}
                           </div>
-                          <div className="text-sm text-muted-foreground">
-                            {payload[0]?.payload.day}
-                          </div>
                           <div className="font-bold text-primary">
-                            {formatCurrency(payload[0]?.value as number)}
+                            {formatValue(payload[0]?.value as number)}
                           </div>
                         </div>
                       </div>
@@ -151,7 +130,7 @@ export function SalesForecastChart({
               />
               <Line
                 type="monotone"
-                dataKey="ventas"
+                dataKey="valor"
                 stroke="hsl(var(--primary))"
                 strokeWidth={2}
                 dot={{ fill: "hsl(var(--primary))", r: 4 }}

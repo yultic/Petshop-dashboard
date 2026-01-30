@@ -8,14 +8,14 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatCurrency(value: number): string {
-  return new Intl.NumberFormat("es-SV", {
+  return new Intl.NumberFormat("es-AR", {
     style: "currency",
-    currency: "USD",
+    currency: "ARS",
   }).format(value);
 }
 
 export function formatNumber(value: number, decimals: number = 2): string {
-  return new Intl.NumberFormat("es-SV", {
+  return new Intl.NumberFormat("es-AR", {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   }).format(value);

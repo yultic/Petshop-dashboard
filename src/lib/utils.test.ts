@@ -27,7 +27,7 @@ describe("cn (classnames utility)", () => {
 });
 
 describe("formatCurrency", () => {
-  it("should format numbers as USD currency", () => {
+  it("should format numbers as ARS currency", () => {
     const result = formatCurrency(1234.56);
     expect(result).toContain("1");
     expect(result).toContain("234");

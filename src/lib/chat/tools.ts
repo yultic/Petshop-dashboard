@@ -50,9 +50,13 @@ export const petshopTools = {
     inputSchema: z.object({
       name: z.string().describe("Nombre de la categoría"),
       days: z.number().default(30).describe("Días a predecir"),
+      target: z
+        .enum(["kilos", "ventas"])
+        .default("kilos")
+        .describe("Si predecir kilos o ventas en dólares"),
     }),
-    execute: async ({ name, days }: { name: string; days: number }) => {
-      const data = await apiClient.predict("categoria", name, days);
+    execute: async ({ name, days, target }: { name: string; days: number; target: "kilos" | "ventas" }) => {
+      const data = await apiClient.predict("categoria", name, days, target);
       return { type: "prediction" as const, data };
     },
   },
@@ -63,9 +67,13 @@ export const petshopTools = {
     inputSchema: z.object({
       name: z.string().describe("Nombre de la marca"),
       days: z.number().default(30).describe("Días a predecir"),
+      target: z
+        .enum(["kilos", "ventas"])
+        .default("kilos")
+        .describe("Si predecir kilos o ventas en dólares"),
     }),
-    execute: async ({ name, days }: { name: string; days: number }) => {
-      const data = await apiClient.predict("marca", name, days);
+    execute: async ({ name, days, target }: { name: string; days: number; target: "kilos" | "ventas" }) => {
+      const data = await apiClient.predict("marca", name, days, target);
       return { type: "prediction" as const, data };
     },
   },

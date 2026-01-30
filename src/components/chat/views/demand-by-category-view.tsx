@@ -35,8 +35,8 @@ export function DemandByCategoryView({ data }: DemandByCategoryViewProps) {
             <TableRow>
               <TableHead>Categoría</TableHead>
               <TableHead className="text-right">Total (kg)</TableHead>
-              <TableHead className="text-right">Promedio/día</TableHead>
-              <TableHead className="w-[120px]"></TableHead>
+              <TableHead className="hidden sm:table-cell text-right">Promedio/día</TableHead>
+              <TableHead className="hidden sm:table-cell w-[120px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -46,10 +46,10 @@ export function DemandByCategoryView({ data }: DemandByCategoryViewProps) {
                 <TableCell className="text-right font-mono">
                   {formatNumber(item.demanda_total_kg, 1)}
                 </TableCell>
-                <TableCell className="text-right font-mono">
+                <TableCell className="hidden sm:table-cell text-right font-mono">
                   {formatNumber(item.demanda_promedio_diaria_kg, 1)}
                 </TableCell>
-                <TableCell>
+                <TableCell className="hidden sm:table-cell">
                   <div className="h-2 w-full rounded-full bg-muted">
                     <div
                       className="h-2 rounded-full bg-primary"

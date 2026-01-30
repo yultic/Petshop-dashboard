@@ -31,21 +31,21 @@ export function DemandByBrandView({ data }: DemandByBrandViewProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[40px]">#</TableHead>
+              <TableHead className="hidden sm:table-cell w-[40px]">#</TableHead>
               <TableHead>Marca</TableHead>
               <TableHead className="text-right">Total (kg)</TableHead>
-              <TableHead className="text-right">Promedio/día</TableHead>
+              <TableHead className="hidden sm:table-cell text-right">Promedio/día</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {data.map((item, i) => (
               <TableRow key={item.marca}>
-                <TableCell className="text-muted-foreground">{i + 1}</TableCell>
+                <TableCell className="hidden sm:table-cell text-muted-foreground">{i + 1}</TableCell>
                 <TableCell className="font-medium">{item.marca}</TableCell>
                 <TableCell className="text-right font-mono">
                   {formatNumber(item.demanda_total_kg, 1)}
                 </TableCell>
-                <TableCell className="text-right font-mono">
+                <TableCell className="hidden sm:table-cell text-right font-mono">
                   {formatNumber(item.demanda_promedio_diaria_kg, 1)}
                 </TableCell>
               </TableRow>
