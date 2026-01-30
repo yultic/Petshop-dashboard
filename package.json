@@ -17,8 +17,11 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.31",
+    "@ai-sdk/react": "^3.0.64",
     "@tanstack/react-query": "^5.62.11",
     "@tanstack/react-table": "^8.20.5",
+    "ai": "^6.0.62",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",

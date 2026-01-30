@@ -4,8 +4,8 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
-        source: '/api/:path*',
-        destination: 'https://petshop-sales-forecasting-production.up.railway.app/api/:path*',
+        source: '/api/v1/:path*',
+        destination: 'https://petshop-sales-forecasting-production.up.railway.app/api/v1/:path*',
       },
     ];
   },
