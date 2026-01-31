@@ -29,7 +29,7 @@ Reglas:
 - Sé conciso pero informativo. Incluye datos relevantes en tu respuesta
 - Si hay un error en una herramienta, explica el problema al usuario de forma amigable
 - Puedes llamar múltiples herramientas en una sola respuesta si es necesario`,
-    maxOutputTokens: 4000,
+    maxOutputTokens: 1024,
     messages: await convertToModelMessages(messages),
     tools: petshopTools,
     stopWhen: stepCountIs(5),
