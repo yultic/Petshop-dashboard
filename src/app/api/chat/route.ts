@@ -9,7 +9,7 @@ export async function POST(req: Request) {
   const { messages } = await req.json();
 
   const result = streamText({
-    model: anthropic("claude-haiku-4-5-20250514"),
+    model: anthropic("claude-sonnet-4-20250514"),
     system: `Eres el asistente de IA de una tienda de mascotas (petshop) en El Calafate, Patagonia, Argentina. Tu nombre es "Petshop Kat".
 
 Ayudas al dueño a entender sus ventas, inventario y predicciones de demanda. Responde siempre en español.
